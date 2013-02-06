@@ -1,6 +1,8 @@
-OlinAI
+OlinAI/README.txt
 
 This is the repository for all code/projects done by Chaz Gwennap for Artificial Intelligence, a class taught at Olin College by Lynn Stein during the 2013 Spring semester. Active development and maintenance of this repository is expected to end in June 2013.
+
+This repository and its contents are released under the MIT License. See LICENSE.txt for the full text.
 
 This repository currently contains the following:
 
