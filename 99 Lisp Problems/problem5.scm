@@ -5,14 +5,20 @@
 
 ;Problem 5: Reverse a list
 
-;so has to recurse and return first element of list at back
-;what if we had something that has two list inputs?
+(define reverse-list
+  (lambda (listvar)
+    (if (null? listvar)
+        listvar
+        (append (reverse-list (cdr listvar)) (cons (car listvar) '())))))
 
-;XXX: Doesn't work, use Ian's implementation?
+(reverse-list '(1 2 4 8 16))
 
-(define switch-items (lambda (first second) (list second first)))
-(define list-reverse (lambda (listvar) (if (null? (cdr listvar))
-                                           (car listvar)
-                                           ()
-                       ))
-(switch-items 3 1)
+;;Deprecated code;;
+
+;(define switch-two 
+;  (lambda (listvar)
+;    (if (null? (cdr listvar))
+;        listvar
+;        (cons (car (cdr listvar)) (cons (car listvar) '())))))
+;
+;(switch-two '(1 2))

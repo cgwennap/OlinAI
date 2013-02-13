@@ -5,11 +5,16 @@
 
 ;Problem 4: Find the number of elements in a list
 
-(define list-length (lambda (listvar) (if (null? (cdr listvar))
-                                          1
-                                          (list-length-counter (cdr listvar) 1))))
-(define list-length-counter (lambda (listvar counter) (if (null? (cdr listvar))
-                                                          (+ counter 1)
-                                                          (list-length-counter (cdr listvar) (+ counter 1)))))
+(define list-length 
+  (lambda (listvar) 
+    (if (null? listvar)
+        0
+        (+ 1 (list-length (cdr listvar))))))
+
+(define list-length-counter 
+  (lambda (listvar counter) 
+    (if (null? listvar)
+        counter
+        (list-length-counter (cdr listvar) (+ counter 1)))))
 
 (list-length '(2 3 4 5))
