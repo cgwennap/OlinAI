@@ -11,6 +11,7 @@
         0
         (+ 1 (list-length (cdr listvar))))))
 
+;depricated function
 (define list-length-counter 
   (lambda (listvar counter) 
     (if (null? listvar)
