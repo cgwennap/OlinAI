@@ -1,4 +1,4 @@
-;problem8.scm
+;problem10.scm
 ;by Chaz Gwennap, Spring 2013
 
 ;solves problem 10 of 99 Lisp problems.
