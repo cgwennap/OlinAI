@@ -7,10 +7,11 @@
 ;Two numbers are coprime if their greatest common divisor equals 1.
 
 ;onevar MUST be greater than twovar!
-(define gcd1
+(define coprime
   (lambda (onevar twovar)
     (if (= twovar 0)
-        onevar
-        (gcd1 twovar (modulo onevar twovar)))))
+        (= onevar 1)
+        (coprime twovar (modulo onevar twovar)))))
 
-(gcd1 1071 462) ;should return 21
+(coprime 1071 462) ;should return #f
+(coprime 1071 5) ;should return #t
