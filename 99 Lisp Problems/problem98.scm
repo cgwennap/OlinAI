@@ -43,7 +43,7 @@
 ;(merge-combos (list 1) (list (list 2) (list 3) (list 3 4))) ;returns ((1 2) (1 3) (1 3 4))
 
 ;function to return a list of each item in listlist1 merged with each item in listlist2
-;currently not used in code
+;currently used in generate-boards
 (define merge-ccombos
   (lambda (listlist1 listlist2)
     (if (null? listlist1)
@@ -169,8 +169,31 @@
   (lambda (row)
     (encode-clue (encode (pack row)))))
 
-(row-to-clue '(1 1 0 1 0 0 0 0 0))
+;(row-to-clue '(1 1 0 1 0 0 0 0 0))
 
-;TODO: Function which generates all possible squares based on row clues.
+;(combo-boards '('(1) '(2)) '('(3) '(4))) should result in (('(1) '(3))('(1) '(4))('(2) '(3))('(2) '(4))
+;(define combo-boards
+;  (lambda (list 1 var)))
 
-;TODO: Add function to render problem based on clues
+;wraps all items in a list in lists.
+(define list-to-listlist
+  (lambda (listvar)
+    (if (null? listvar)
+        (list)
+        (cons (list (car listvar)) (list-to-listlist (cdr listvar))))))
+(list-to-listlist '(1 2))
+
+;function which generates all possible squares based on row clues.
+;FIXME: Significant memory/performance issues for squares beyond 6x6.
+(define generate-boards
+  (lambda (rowclues columnclues)
+    (if (null? rowclues)
+        (list)
+        (if (null? (cdr rowclues))
+            (list-to-listlist (possible-rows (car rowclues) (list-length columnclues)))
+            (merge-ccombos (list-to-listlist (possible-rows (car rowclues) (list-length columnclues))) (generate-boards (cdr rowclues) columnclues))))))
+;(list-length (generate-boards (list '(3) '(2 1) '(3 2) '(2 2) '(6) '(1 5) '(6) '(1) '(2)) (list 1 2 3 4 5 6 7 8)))
+
+;TODO: Add function to evaluate legality of columns, to enable branch pruning and save memory.
+
+;TODO: Add function to render problem
