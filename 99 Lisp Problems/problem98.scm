@@ -21,7 +21,7 @@
   (lambda (length)
     (if (= length 0)
         (list)
-        (cons 'x (exes (- length 1))))))
+        (cons 1 (exes (- length 1))))))
 ;(exes 4)
 
 (define zeroes
@@ -106,8 +106,71 @@
         (if (null? (cdr listvar))
             (seg-list (car listvar) rowlength)
             (seg-gen listvar rowlength (- rowlength (cdr-length (cdr listvar))))))))
-(possible-rows (list 2 1) 9) ;excerpt from example nonogram
+;(possible-rows (list 2 1) 9) ;excerpt from example nonogram
 
-;TODO: Function which solves 8 queens problem.
+;;;Auxiliary functions from problem 10;;;
+;returns rest of list that is different from first item in list
+(define find-different
+  (lambda (listvar)
+    (cond
+      ((null? listvar) listvar)
+      ((null? (cdr listvar)) (list))
+      ((eq? (car listvar) (cadr listvar)) (find-different (cdr listvar)))
+      (else (cdr listvar)))))
+
+;(find-different '(1 4))
+
+;creates list with first element and any subsequent elements that are the same as the first
+(define start-list
+  (lambda (listvar)
+    (cond
+      ((null? listvar) (list))
+      ((null? (cdr listvar)) listvar)
+      ((eq? (car listvar) (cadr listvar)) (cons (car listvar) (start-list (cdr listvar))))
+      (else (list (car listvar))))))
+
+;(start-list '(1 1 1 1 4 2 2 3 3))
+
+(define pack
+  (lambda (listvar)
+    (if (null? listvar)
+        listvar
+        (cons (start-list listvar) (pack (find-different listvar))))))
+
+;(pack '(1 1 4 3 5 5 8 8 8 8))
+
+;assumes uniform values in list
+(define length-value 
+  (lambda (listvar)
+    (if (null? listvar)
+        listvar
+        (list (list-length listvar) (car listvar)))))
+;(length-value '(1 1 2)) ;will return (3 1)
+
+;must be given a packed list (most importantly, a list of lists)
+(define encode 
+  (lambda (listvar)
+    (if (null? listvar)
+        listvar
+        (cons (length-value (car listvar)) (encode (cdr listvar))))))
+;;;End Auxilliary problem10.scm functions;;; 
+
+(define encode-clue
+  (lambda (listlistvar)
+    (if (null? listlistvar)
+        (list)
+        (if (= 1 (cadr (car listlistvar)))
+            (cons (car (car listlistvar)) (encode-clue (cdr listlistvar)))
+            (encode-clue (cdr listlistvar))))))
+;(encode-clue (encode (pack '(1 1 0 1 0 0 0 0 0))));(pack '('x 'x 0 'x 0 0 0 0 0)))
+
+;function which converts row to nonogram clue.
+(define row-to-clue
+  (lambda (row)
+    (encode-clue (encode (pack row)))))
+
+(row-to-clue '(1 1 0 1 0 0 0 0 0))
+
+;TODO: Function which generates all possible squares based on row clues.
 
 ;TODO: Add function to render problem based on clues
