@@ -165,6 +165,7 @@
 ;(encode-clue (encode (pack '(1 1 0 1 0 0 0 0 0))));(pack '('x 'x 0 'x 0 0 0 0 0)))
 
 ;function which converts row to nonogram clue.
+;currently not used in code
 (define row-to-clue
   (lambda (row)
     (encode-clue (encode (pack row)))))
@@ -181,7 +182,7 @@
     (if (null? listvar)
         (list)
         (cons (list (car listvar)) (list-to-listlist (cdr listvar))))))
-(list-to-listlist '(1 2))
+;(list-to-listlist '(1 2))
 
 ;function which generates all possible squares based on row clues.
 ;FIXME: Significant memory/performance issues for squares beyond 6x6. Resolve by filtering out incorrect solutions retroactively.
@@ -201,7 +202,7 @@
     (if (null? listlist)
         listlist
         (cons (car (car listlist)) (rowcar (cdr listlist))))))
-(rowcar (list (list 1 2) (list 3 4)))
+;(rowcar (list (list 1 2) (list 3 4)))
 
 ;does cdr for a list of rows
 ;e.g (rowcdr (list (list 1 2) (list 3 4))) returns ((2) (4))
@@ -210,9 +211,9 @@
     (if (null? listlist)
         listlist
         (cons (cdr (car listlist)) (rowcdr (cdr listlist))))))
-(rowcdr (list (list 1 2) (list 3 4)))
+;(rowcdr (list (list 1 2) (list 3 4)))
 
-;TODO: Add function to evaluate legality of columns, to enable branch pruning and save memory.
+;--- Branch evaluation functions ---
 ;enter in column and incomplete column, if the last elements match, then return true
 (define columnmatch
   (lambda (fullcol col)
@@ -220,7 +221,7 @@
         (equal? fullcol col)
         (columnmatch (cdr fullcol) col))))
 
-(columnmatch '(2 1) '(1)) ;should return true
+;(columnmatch '(2 1) '(1)) ;should return true
 
 ;enter list of potential columns and incomplete column, return true if at least one match exists
 (define listcolumnmatch
@@ -229,13 +230,40 @@
         #f
         (or (columnmatch (car collist) col)
             (listcolumnmatch (cdr collist) col)))))
-(listcolumnmatch (list '(1 2) (list 2 3)) '(3)) ;should return true
+;(listcolumnmatch (list '(1 2) (list 2 3)) '(3)) ;should return true
 
 ;given clue and incomplete column, run listcolumnmatch
-;FIXME: make rowlength not be set to 7
+;Note: currently deprecated by validrowlist
 (define cluecolmatch
   (lambda (clue col)
     (listcolumnmatch (possible-rows clue 7) col)))
-(cluecolmatch '(2 1) '(1 0 1 0 0 0)) ;should return true
+;(cluecolmatch '(2 1) '(1 0 1 0 0 0)) ;should return true
+
+;given list of rows, list of clues, and length of columns
+;return true if valid combination of rows, false otherwise
+(define validrowlist
+  (lambda (rowlist cluelist collength)
+    (if (null? cluelist)
+        #t
+        (and (listcolumnmatch (possible-rows (car cluelist) collength) (rowcar rowlist))
+             (validrowlist (rowcdr rowlist) (cdr cluelist) collength)))))
+;(validrowlist (possible-rows '(2 1) 4) (list '(2 1) '(1 1) '(1 1) '(1 1)) 4) ;returns true
+;(validrowlist (possible-rows '(2 1) 4) (list '(2 1) '(1 1) '(2 1) '(1 1)) 4) ;returns false because cannot have zero at (4,3)
+
+;filters rowlists based on whether they match the column clues.
+;requires list of rowlists, list of clues, and length of columns
+(define filterrows
+  (lambda (rowlistlist cluelist collength)
+    (if (null? rowlistlist)
+        (list)
+        (if (validrowlist (car rowlistlist) cluelist collength)
+            (cons (car rowlistlist) (filterrows (cdr rowlistlist) cluelist collength))
+            (filterrows (cdr rowlistlist) cluelist collength)))))
+;(filterrows (list-to-listlist (possible-rows '(1 1) 4)) (list '(2 1) '(1 1) '(1 1) '(1 1)) 4) ;should return (((1 0 1 0)) ((1 0 0 1))) 2/3 possibilities
+;(filterrows (list-to-listlist (possible-rows '(1) 4)) (list '(2 1) '(2 1) '(1 1) '(1 1)) 4) ;should return ()
+
+;---End Branch evaluation functions---
+
+;TODO: integrate filterrows and merge-ccombos.
 
 ;TODO: Add function to render problem
