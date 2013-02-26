@@ -184,7 +184,7 @@
 (list-to-listlist '(1 2))
 
 ;function which generates all possible squares based on row clues.
-;FIXME: Significant memory/performance issues for squares beyond 6x6.
+;FIXME: Significant memory/performance issues for squares beyond 6x6. Resolve by filtering out incorrect solutions retroactively.
 (define generate-boards
   (lambda (rowclues columnclues)
     (if (null? rowclues)
@@ -194,6 +194,48 @@
             (merge-ccombos (list-to-listlist (possible-rows (car rowclues) (list-length columnclues))) (generate-boards (cdr rowclues) columnclues))))))
 ;(list-length (generate-boards (list '(3) '(2 1) '(3 2) '(2 2) '(6) '(1 5) '(6) '(1) '(2)) (list 1 2 3 4 5 6 7 8)))
 
+;does car for a list of rows,
+;e.g (rowcar (list (list 1 2) (list 3 4))) returns (1 3)
+(define rowcar
+  (lambda (listlist)
+    (if (null? listlist)
+        listlist
+        (cons (car (car listlist)) (rowcar (cdr listlist))))))
+(rowcar (list (list 1 2) (list 3 4)))
+
+;does cdr for a list of rows
+;e.g (rowcdr (list (list 1 2) (list 3 4))) returns ((2) (4))
+(define rowcdr
+  (lambda (listlist)
+    (if (null? listlist)
+        listlist
+        (cons (cdr (car listlist)) (rowcdr (cdr listlist))))))
+(rowcdr (list (list 1 2) (list 3 4)))
+
 ;TODO: Add function to evaluate legality of columns, to enable branch pruning and save memory.
+;enter in column and incomplete column, if the last elements match, then return true
+(define columnmatch
+  (lambda (fullcol col)
+    (if (= (list-length fullcol) (list-length col))
+        (equal? fullcol col)
+        (columnmatch (cdr fullcol) col))))
+
+(columnmatch '(2 1) '(1)) ;should return true
+
+;enter list of potential columns and incomplete column, return true if at least one match exists
+(define listcolumnmatch
+  (lambda (collist col)
+    (if (null? collist)
+        #f
+        (or (columnmatch (car collist) col)
+            (listcolumnmatch (cdr collist) col)))))
+(listcolumnmatch (list '(1 2) (list 2 3)) '(3)) ;should return true
+
+;given clue and incomplete column, run listcolumnmatch
+;FIXME: make rowlength not be set to 7
+(define cluecolmatch
+  (lambda (clue col)
+    (listcolumnmatch (possible-rows clue 7) col)))
+(cluecolmatch '(2 1) '(1 0 1 0 0 0)) ;should return true
 
 ;TODO: Add function to render problem
