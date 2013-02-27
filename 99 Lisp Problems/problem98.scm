@@ -9,6 +9,10 @@
 ;The goal is to give the actual rectangular graph of 1s and 0s, that fit the lists provided.
 ;Published puzzles are larger than this example, e.g. 25 x 20, and apparently always have unique solutions.
 
+(define print
+  (lambda (var)
+    (display var)
+    (newline)))
 
 (define list-length 
   (lambda (listvar) 
@@ -49,7 +53,7 @@
     (if (null? listlist1)
         listlist1
         (append (merge-combos (car listlist1) listlist2) (merge-ccombos (cdr listlist1) listlist2)))))
-;(merge-ccombos (list '(1) '(2)) (list '(1) '(2)))
+;(merge-ccombos (list '(1) '(2)) (list '(1) '(2))) ;returns ((1 1) (1 2) (2 1) (2 2))
 
 ;Return list of potential segments of rows based on segment length and length of block.
 ;Used at end of row generator to vary space before and after block
@@ -184,17 +188,6 @@
         (cons (list (car listvar)) (list-to-listlist (cdr listvar))))))
 ;(list-to-listlist '(1 2))
 
-;function which generates all possible squares based on row clues.
-;FIXME: Significant memory/performance issues for squares beyond 6x6. Resolve by filtering out incorrect solutions retroactively.
-(define generate-boards
-  (lambda (rowclues columnclues)
-    (if (null? rowclues)
-        (list)
-        (if (null? (cdr rowclues))
-            (list-to-listlist (possible-rows (car rowclues) (list-length columnclues)))
-            (merge-ccombos (list-to-listlist (possible-rows (car rowclues) (list-length columnclues))) (generate-boards (cdr rowclues) columnclues))))))
-;(list-length (generate-boards (list '(3) '(2 1) '(3 2) '(2 2) '(6) '(1 5) '(6) '(1) '(2)) (list 1 2 3 4 5 6 7 8)))
-
 ;does car for a list of rows,
 ;e.g (rowcar (list (list 1 2) (list 3 4))) returns (1 3)
 (define rowcar
@@ -243,6 +236,7 @@
 ;return true if valid combination of rows, false otherwise
 (define validrowlist
   (lambda (rowlist cluelist collength)
+    ;(print rowlist)
     (if (null? cluelist)
         #t
         (and (listcolumnmatch (possible-rows (car cluelist) collength) (rowcar rowlist))
@@ -264,6 +258,31 @@
 
 ;---End Branch evaluation functions---
 
-;TODO: integrate filterrows and merge-ccombos.
+;function which generates all possible squares based on row clues.
+(define generate-boards2
+  (lambda (rowclues columnclues collength)
+    (if (null? rowclues)
+        (list)
+        (if (null? (cdr rowclues))
+            (list-to-listlist (possible-rows (car rowclues) (list-length columnclues)))
+            (filterrows (merge-ccombos (list-to-listlist (possible-rows (car rowclues) (list-length columnclues))) (generate-boards2 (cdr rowclues) columnclues collength))
+                        columnclues
+                        collength)))))
+;(generate-boards2 (list '(1) '(1) '(1)) (list '(1) '(1) '(1)) 3)
 
-;TODO: Add function to render problem
+;function which generates all possible squares based on row clues.
+(define generate-boards
+  (lambda (rowclues columnclues)
+    (if (null? rowclues)
+        (list)
+        (if (null? (cdr rowclues))
+            (list-to-listlist (possible-rows (car rowclues) (list-length columnclues)))
+            (filterrows (merge-ccombos (list-to-listlist (possible-rows (car rowclues) (list-length columnclues))) (generate-boards2 (cdr rowclues) columnclues (list-length rowclues)))
+                        columnclues
+                        (list-length rowclues))))))
+;(generate-boards (list '(1) '(1) '(1)) (list '(1) '(1) '(1)))
+;(generate-boards (list '(1 1) '(1 1) '(1 1) '(1 1)) (list '(1 1) '(1 1) '(1 1) '(1 1)))
+(generate-boards (list '(3) '(2 1) '(3 2) '(2 2) '(6) '(1 5) '(6) '(1) '(2)) (list (list 1 2) (list 3 1) (list 1 5) (list 7 1) (list 5) (list 3) (list 4) (list 3)))
+;returns (((0 1 1 1 0 0 0 0) (1 1 0 1 0 0 0 0) (0 1 1 1 0 0 1 1) (0 0 1 1 0 0 1 1) (0 0 1 1 1 1 1 1) (1 0 1 1 1 1 1 0) (1 1 1 1 1 1 0 0) (0 0 0 0 1 0 0 0) (0 0 0 1 1 0 0 0)))
+
+;TODO: Add function to render problem. Technically not required for problem, but would be nice.
