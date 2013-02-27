@@ -25,7 +25,7 @@
   (lambda (length)
     (if (= length 0)
         (list)
-        (cons 1 (exes (- length 1))))))
+        (cons 'x (exes (- length 1))))))
 ;(exes 4)
 
 (define zeroes
@@ -82,14 +82,6 @@
             (+ 1 (+ (car listvar) (cdr-length (cdr listvar))))))))
 ;(cdr-length '(2 4 4)) ;should return 12
 
-;gives all combos of sums given largest number and sum of the two numbers
-(define pet-results
-  (lambda (shortlength sum)
-    (if (= shortlength 0)
-        (list)
-        (cons (list shortlength (- sum shortlength)) (pet-results (- shortlength 1) sum)))))
-;(pet-results 5 16) ;should return ((5 11) (4 12) (3 13) (2 14) (1 15))
-
 ;generates a segment of the row, recursively moves around if it has the space
 (define seg-gen
   (lambda (listvar rowlength shortlength)
@@ -111,74 +103,6 @@
             (seg-list (car listvar) rowlength)
             (seg-gen listvar rowlength (- rowlength (cdr-length (cdr listvar))))))))
 ;(possible-rows (list 2 1) 9) ;excerpt from example nonogram
-
-;;;Auxiliary functions from problem 10;;;
-;returns rest of list that is different from first item in list
-(define find-different
-  (lambda (listvar)
-    (cond
-      ((null? listvar) listvar)
-      ((null? (cdr listvar)) (list))
-      ((eq? (car listvar) (cadr listvar)) (find-different (cdr listvar)))
-      (else (cdr listvar)))))
-
-;(find-different '(1 4))
-
-;creates list with first element and any subsequent elements that are the same as the first
-(define start-list
-  (lambda (listvar)
-    (cond
-      ((null? listvar) (list))
-      ((null? (cdr listvar)) listvar)
-      ((eq? (car listvar) (cadr listvar)) (cons (car listvar) (start-list (cdr listvar))))
-      (else (list (car listvar))))))
-
-;(start-list '(1 1 1 1 4 2 2 3 3))
-
-(define pack
-  (lambda (listvar)
-    (if (null? listvar)
-        listvar
-        (cons (start-list listvar) (pack (find-different listvar))))))
-
-;(pack '(1 1 4 3 5 5 8 8 8 8))
-
-;assumes uniform values in list
-(define length-value 
-  (lambda (listvar)
-    (if (null? listvar)
-        listvar
-        (list (list-length listvar) (car listvar)))))
-;(length-value '(1 1 2)) ;will return (3 1)
-
-;must be given a packed list (most importantly, a list of lists)
-(define encode 
-  (lambda (listvar)
-    (if (null? listvar)
-        listvar
-        (cons (length-value (car listvar)) (encode (cdr listvar))))))
-;;;End Auxilliary problem10.scm functions;;; 
-
-(define encode-clue
-  (lambda (listlistvar)
-    (if (null? listlistvar)
-        (list)
-        (if (= 1 (cadr (car listlistvar)))
-            (cons (car (car listlistvar)) (encode-clue (cdr listlistvar)))
-            (encode-clue (cdr listlistvar))))))
-;(encode-clue (encode (pack '(1 1 0 1 0 0 0 0 0))));(pack '('x 'x 0 'x 0 0 0 0 0)))
-
-;function which converts row to nonogram clue.
-;currently not used in code
-(define row-to-clue
-  (lambda (row)
-    (encode-clue (encode (pack row)))))
-
-;(row-to-clue '(1 1 0 1 0 0 0 0 0))
-
-;(combo-boards '('(1) '(2)) '('(3) '(4))) should result in (('(1) '(3))('(1) '(4))('(2) '(3))('(2) '(4))
-;(define combo-boards
-;  (lambda (list 1 var)))
 
 ;wraps all items in a list in lists.
 (define list-to-listlist
@@ -283,6 +207,6 @@
 ;(generate-boards (list '(1) '(1) '(1)) (list '(1) '(1) '(1)))
 ;(generate-boards (list '(1 1) '(1 1) '(1 1) '(1 1)) (list '(1 1) '(1 1) '(1 1) '(1 1)))
 (generate-boards (list '(3) '(2 1) '(3 2) '(2 2) '(6) '(1 5) '(6) '(1) '(2)) (list (list 1 2) (list 3 1) (list 1 5) (list 7 1) (list 5) (list 3) (list 4) (list 3)))
-;returns (((0 1 1 1 0 0 0 0) (1 1 0 1 0 0 0 0) (0 1 1 1 0 0 1 1) (0 0 1 1 0 0 1 1) (0 0 1 1 1 1 1 1) (1 0 1 1 1 1 1 0) (1 1 1 1 1 1 0 0) (0 0 0 0 1 0 0 0) (0 0 0 1 1 0 0 0)))
+;returns (((0 x x x 0 0 0 0) (x x 0 x 0 0 0 0) (0 x x x 0 0 x x) (0 0 x x 0 0 x x) (0 0 x x x x x x) (x 0 x x x x x 0) (x x x x x x 0 0) (0 0 0 0 x 0 0 0) (0 0 0 x x 0 0 0)))
 
 ;TODO: Add function to render problem. Technically not required for problem, but would be nice.
